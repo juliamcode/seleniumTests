@@ -1,8 +1,6 @@
 import org.junit.Test;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.Select;
 
@@ -18,49 +16,67 @@ public class TestSelenium {
 
     public static WebDriver driver = new FirefoxDriver();
     public static String checkSolution = "solution";
+    public static String mainSite = "https://antycaptcha.amberteam.pl";
+    public static String btnButton1 = "btnButton1";
+    public static String btnButton2 = "btnButton2";
 
 
     @Test
     public void excercise1() {
 
-        String excercise1address = "https://antycaptcha.amberteam.pl/exercises/exercise1?seed=6b42fcfa-5b3f-4ebe-8de2-7e260a0f0ef8";
-        String btnButton1 = "btnButton1";
-        String btnButton2 = "btnButton2";
+        goToExcercise("Three buttons");
 
-        driver.get(excercise1address);
+        List<WebElement> codeSnippets = driver.findElements(By.tagName("code"));
 
-        driver.findElement(By.id(btnButton1)).click();
-        driver.findElement(By.id(btnButton2)).click();
-        driver.findElement(By.id(btnButton1)).click();
+        for(int i=0; i< 3; i++) {
+
+            String txt = codeSnippets.get(i).getText();
+
+            if("B1".equals(txt)) {
+                driver.findElement(By.id(btnButton1)).click();
+            } else if("B2".equals(txt)) {
+                driver.findElement(By.id(btnButton2)).click();
+            }
+        }
 
         checkSolution();
     }
+
 
     @Test
     public void excercise2() {
 
-        String excercise2address = "https://antycaptcha.amberteam.pl/exercises/exercise2?seed=977417bc-98f9-46e5-a0b8-6ae94be225f7";
-        String btnButton1 = "btnButton1";
-        driver.get(excercise2address);
         String inputID = "t14";
+
+        goToExcercise("Editbox");
+
+        List<WebElement> codeSnippets = driver.findElements(By.tagName("code"));
+
+        String txt = codeSnippets.get(0).getText();
+
         driver.findElement(By.id(inputID)).clear();
-        driver.findElement(By.id(inputID)).sendKeys("Air environment author.");
+        driver.findElement(By.id(inputID)).sendKeys(txt);
         driver.findElement(By.id(btnButton1)).click();
 
         checkSolution();
     }
 
+
     @Test
     public void excercise3() {
 
-        String excercise3address = "https://antycaptcha.amberteam.pl/exercises/exercise3?seed=ea74c46a-6546-4ba5-a996-2384bff439a9";
-        driver.get(excercise3address);
+        goToExcercise("Dropdown list");
+
         String dropdownListId = "s13";
         Select drp = new Select(driver.findElement(By.id(dropdownListId)));
-        drp.selectByVisibleText("Freudian Gilt");
+
+        String txt = driver.findElements(By.tagName("code")).get(0).getText();
+
+        drp.selectByVisibleText(txt);
 
         checkSolution();
     }
+
 
     @Test
     public void excercise4() {
@@ -82,8 +98,23 @@ public class TestSelenium {
     }
 
     public static void checkSolution() {
-        driver.findElement(By.id(checkSolution)).click();
-        assertEquals(driver.findElement(By.id("trail")).getText(), "OK. Good answer");
+        WebElement element = driver.findElement(By.id(checkSolution));
+        if(element.isEnabled()) {
+            element.click();
+            assertEquals(driver.findElement(By.id("trail")).getText(), "OK. Good answer");
+        } else {
+            System.out.println("ERROR: 'Check Solution button is DISABLED");
+        }
+
+    }
+
+    public static void goToExcercise(String txt) {
+        driver.get(mainSite);
+
+        WebElement element = driver.findElement(By.xpath("//*[text()[contains(.,'" +
+                txt +
+                "')]]"));
+        element.click();
     }
 
     public static void clickElementInRadioButtonsList(String elementsName, String elementsValue) {
@@ -91,7 +122,8 @@ public class TestSelenium {
 
         for(int i=0; i< radioButtonsList.size(); i++){
             WebElement webElement = (WebElement) radioButtonsList.get(i);
-            System.out.println();
+            String txt = webElement.getText();
+            System.out.println(txt);
             String val = webElement.getAttribute("value");
 
             if(val.equals(elementsValue)) {
